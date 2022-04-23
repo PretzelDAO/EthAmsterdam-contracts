@@ -232,6 +232,36 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
           })
         ).to.not.be.reverted;
       });
+
+      // it('Profile creation with initial approval data should emit expected event', async function () {
+      //   const secondProfileId = FIRST_PROFILE_ID + 1;
+      //   const data = abiCoder.encode(['address[]'], [[userTwoAddress]]);
+
+      //   const tx = lensHub.createProfile({
+      //     to: userAddress,
+      //     handle: 'secondhandle',
+      //     imageURI: MOCK_PROFILE_URI,
+      //     followModule: approvalFollowModule.address,
+      //     followModuleInitData: data,
+      //     followNFTURI: MOCK_FOLLOW_NFT_URI,
+      //   });
+
+      //   const receipt = await waitForTx(tx);
+
+      //   expect(receipt.logs.length).to.eq(2);
+      //   matchEvent(receipt, 'Transfer', [ZERO_ADDRESS, userAddress, secondProfileId], lensHubImpl);
+      //   matchEvent(receipt, 'ProfileCreated', [
+      //     secondProfileId,
+      //     userAddress,
+      //     userAddress,
+      //     'secondhandle',
+      //     MOCK_PROFILE_URI,
+      //     approvalFollowModule.address,
+      //     data,
+      //     MOCK_FOLLOW_NFT_URI,
+      //     await getTimestamp(),
+      //   ]);
+      });
     });
   });
 });
