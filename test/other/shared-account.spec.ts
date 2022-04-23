@@ -1,10 +1,11 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { ZERO_ADDRESS } from '../helpers/constants';
-import { SharedAccount, SharedAccount__factory } from '../../typechain-types';
+import { SharedAccount, SharedAccount__factory, ERC721Enumerable, ERC721Enumerable__factory } from '../../typechain-types';
 import {
   deployer,
   freeCollectModule,
+  approvalFollowModule,
   FIRST_PROFILE_ID,
   governance,
   lensHub,
@@ -233,34 +234,26 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
         ).to.not.be.reverted;
       });
 
-      // it('Profile creation with initial approval data should emit expected event', async function () {
-      //   const secondProfileId = FIRST_PROFILE_ID + 1;
-      //   const data = abiCoder.encode(['address[]'], [[userTwoAddress]]);
-
-      //   const tx = lensHub.createProfile({
-      //     to: userAddress,
-      //     handle: 'secondhandle',
-      //     imageURI: MOCK_PROFILE_URI,
-      //     followModule: approvalFollowModule.address,
-      //     followModuleInitData: data,
-      //     followNFTURI: MOCK_FOLLOW_NFT_URI,
-      //   });
-
-      //   const receipt = await waitForTx(tx);
-
-      //   expect(receipt.logs.length).to.eq(2);
-      //   matchEvent(receipt, 'Transfer', [ZERO_ADDRESS, userAddress, secondProfileId], lensHubImpl);
-      //   matchEvent(receipt, 'ProfileCreated', [
-      //     secondProfileId,
-      //     userAddress,
-      //     userAddress,
-      //     'secondhandle',
-      //     MOCK_PROFILE_URI,
-      //     approvalFollowModule.address,
-      //     data,
-      //     MOCK_FOLLOW_NFT_URI,
-      //     await getTimestamp(),
-      //   ]);
+      it.only('Follow call should work when address was previously approved', async function () {
+          await lensHub.connect(userTwo).createProfile({
+            to: userTwoAddress,
+            handle: 'plant2ghost.eth',
+            imageURI: MOCK_PROFILE_URI,
+            followModule: ZERO_ADDRESS,
+            followModuleInitData: [],
+            followNFTURI: MOCK_FOLLOW_NFT_URI,
+          });
+         await lensHub.connect(governance).whitelistFollowModule(approvalFollowModule.address, true)
+         await lensHub.connect(userTwo).setFollowModule(2, approvalFollowModule.address, [])
+         await approvalFollowModule.connect(userTwo).approve(2, [sharedAccount.address], [true])
+        await expect(sharedAccount.connect(user).followOnBehalf(userAddress,[2], [[]])).to.not.be.reverted;
+        let token:ERC721Enumerable = ERC721Enumerable__factory.connect(
+          await lensHub.getFollowNFT(2),
+          deployer
+        );
+        // console.log(await lensHub.getFollowNFT(2));
+        // console.log(token)
+        expect(await token.ownerOf(1)).to.eq(userAddress)
       });
     });
   });
