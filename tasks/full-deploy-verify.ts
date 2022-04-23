@@ -3,6 +3,7 @@ import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import fs from 'fs';
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { ProtocolState, initEnv, getAddrs } from './helpers/utils';
 import {
   LensHub__factory,
   ApprovalFollowModule__factory,
@@ -23,6 +24,7 @@ import {
   ProfileTokenURILogic__factory,
   LensPeriphery__factory,
   UIDataProvider__factory,
+  SharedAccount__factory,
   ProfileFollowModule__factory,
 } from '../typechain-types';
 import { deployWithVerify, waitForTx } from './helpers/utils';
@@ -258,9 +260,24 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       new UIDataProvider__factory(deployer).deploy(lensHub.address, {
         nonce: deployerNonce++,
       }),
-      [lensHub.address],
+      [lensHub.address, ],
       'contracts/misc/UIDataProvider.sol:UIDataProvider'
     );
+
+    // Deploy Shared Account
+    console.log('\n\t-- Deploying Shared Account--');
+    const sharedAccount = await deployWithVerify(
+      new SharedAccount__factory(deployer).deploy(
+        lensHub.address,
+        accounts[0].address,
+        "0x7f661e9f547aCc38D413a63E16E03C3247f9a72D",
+        {
+          nonce: deployerNonce++,
+        }),
+        [lensHub.address, accounts[0].address, "0x7f661e9f547aCc38D413a63E16E03C3247f9a72D"],
+      'contracts/misc/ShaedAccount.sol:SharedAccount'
+    );
+
 
     // Whitelist the collect modules
     console.log('\n\t-- Whitelisting Collect Modules --');
@@ -315,6 +332,10 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       })
     );
 
+    console.log('\n\t-- Unpausing protocol --');
+    await lensHub.setState(ProtocolState.Unpaused);
+    console.log(await lensHub.getState());
+
     // Save and log the addresses
     const addrs = {
       'lensHub proxy': lensHub.address,
@@ -338,6 +359,7 @@ task('full-deploy-verify', 'deploys the entire Lens Protocol with explorer verif
       // 'approval follow module': approvalFollowModule.address,
       'follower only reference module': followerOnlyReferenceModule.address,
       'UI data provider': uiDataProvider.address,
+      'Shared Account': sharedAccount.address
     };
     const json = JSON.stringify(addrs, null, 2);
     console.log(json);

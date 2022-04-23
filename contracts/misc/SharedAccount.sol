@@ -83,6 +83,6 @@ contract SharedAccount is AccessControl, ERC721Holder {
 
   function linkTwitter(uint twitterId, uint lensId) external onlyRole(POSTER_ROLE) {
       twitterIdToProfileId[twitterId] = lensId;
-      lensIdToProfileId[lensId] twitterId;
+      profileIdToTwitterId[lensId] = twitterId;
   }
 }

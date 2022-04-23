@@ -70,7 +70,7 @@ const config: HardhatUserConfig = {
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
-    mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
+    polygonMumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
     hardhat: {
       hardfork: 'london',
@@ -95,8 +95,11 @@ const config: HardhatUserConfig = {
     runOnCompile: false,
   },
   etherscan: {
-    apiKey: BLOCK_EXPLORER_KEY,
-  },
+    // @ts-ignore
+        apiKey: BLOCK_EXPLORER_KEY,
+  
+  }
+
 };
 
 export default config;
