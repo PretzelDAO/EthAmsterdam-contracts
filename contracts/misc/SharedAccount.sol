@@ -24,8 +24,8 @@ contract SharedAccount is AccessControl, ERC721Holder {
 
   bytes32 public constant ADMIN_ROLE = keccak256('ADMIN_ROLE');
   bytes32 public constant POSTER_ROLE = keccak256('POSTER_ROLE');
-  mapping (uint => uint) public twitterIdToProfileId;
-  mapping (uint => uint) public profileIdToTwitterId;
+  mapping (string => uint) public twitterIdToProfileId;
+  mapping (uint => string) public profileIdToTwitterId;
 
   constructor(
     address hub,
@@ -81,7 +81,21 @@ contract SharedAccount is AccessControl, ERC721Holder {
       }
   }
 
-  function linkTwitter(uint twitterId, uint lensId) external onlyRole(POSTER_ROLE) {
+    function unFollowOnBehalf(address onBehalfOf, uint256[] calldata profileIds, bytes[] calldata datas) external onlyRole(POSTER_ROLE) {
+      uint[] memory tokenIds = ILensHub(HUB).follow(profileIds, datas);
+      for (uint256 i= 0; i < tokenIds.length;) {
+        IERC721(ILensHub(HUB).getFollowNFT(profileIds[i])).safeTransferFrom(
+            address(this),
+            onBehalfOf,
+            tokenIds[i]
+        );
+        unchecked {
+            i ++;
+        }
+      }
+  }
+
+  function linkTwitter(string memory twitterId, uint lensId) external onlyRole(POSTER_ROLE) {
       twitterIdToProfileId[twitterId] = lensId;
       profileIdToTwitterId[lensId] = twitterId;
   }

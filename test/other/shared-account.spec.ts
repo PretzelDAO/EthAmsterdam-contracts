@@ -137,16 +137,16 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
             .grantRole(keccak256(toUtf8Bytes('POSTER_ROLE')), userTwoAddress)
         ).to.not.be.reverted;
 
-        
-        await  sharedAccount.connect(userTwo).post({
-            profileId: FIRST_PROFILE_ID,
-            contentURI: MOCK_URI,
-            collectModule: freeCollectModule.address,
-            collectModuleInitData: abiCoder.encode(['bool'], [true]),
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        
+
+        await sharedAccount.connect(userTwo).post({
+          profileId: FIRST_PROFILE_ID,
+          contentURI: MOCK_URI,
+          collectModule: freeCollectModule.address,
+          collectModuleInitData: abiCoder.encode(['bool'], [true]),
+          referenceModule: ZERO_ADDRESS,
+          referenceModuleInitData: [],
+        })
+
 
         const pub = await lensHub.getPub(FIRST_PROFILE_ID, 1);
         expect(pub.profileIdPointed).to.eq(0);
@@ -235,19 +235,19 @@ makeSuiteCleanRoom('Shared Account Smart Contract', function () {
       });
 
       it.only('Follow call should work when address was previously approved', async function () {
-          await lensHub.connect(userTwo).createProfile({
-            to: userTwoAddress,
-            handle: 'plant2ghost.eth',
-            imageURI: MOCK_PROFILE_URI,
-            followModule: ZERO_ADDRESS,
-            followModuleInitData: [],
-            followNFTURI: MOCK_FOLLOW_NFT_URI,
-          });
-         await lensHub.connect(governance).whitelistFollowModule(approvalFollowModule.address, true)
-         await lensHub.connect(userTwo).setFollowModule(2, approvalFollowModule.address, [])
-         await approvalFollowModule.connect(userTwo).approve(2, [sharedAccount.address], [true])
-        await expect(sharedAccount.connect(user).followOnBehalf(userAddress,[2], [[]])).to.not.be.reverted;
-        let token:ERC721Enumerable = ERC721Enumerable__factory.connect(
+        await lensHub.connect(userTwo).createProfile({
+          to: userTwoAddress,
+          handle: 'plant2ghost.eth',
+          imageURI: MOCK_PROFILE_URI,
+          followModule: ZERO_ADDRESS,
+          followModuleInitData: [],
+          followNFTURI: MOCK_FOLLOW_NFT_URI,
+        });
+        await lensHub.connect(governance).whitelistFollowModule(approvalFollowModule.address, true)
+        await lensHub.connect(userTwo).setFollowModule(2, approvalFollowModule.address, [])
+        await approvalFollowModule.connect(userTwo).approve(2, [sharedAccount.address], [true])
+        await expect(sharedAccount.connect(user).followOnBehalf(userAddress, [2], [[]])).to.not.be.reverted;
+        let token: ERC721Enumerable = ERC721Enumerable__factory.connect(
           await lensHub.getFollowNFT(2),
           deployer
         );
